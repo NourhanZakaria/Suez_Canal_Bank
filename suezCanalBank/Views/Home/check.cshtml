@@ -1,0 +1,148 @@
+﻿@model suezCanalBank.Models.Customer
+
+@{
+    ViewBag.Title = "check";
+}
+
+<h2>check</h2>
+
+<select class="form-select mt-2" aria-label="Default select example" id="userType">
+    <option selected>type of customer</option>
+    <option>Egyption</option>
+    <option>Foreigner</option>
+</select>
+
+<div id="passportDiv" style="display:none;" class="mt-5">
+    <label for="textbox">Passport Number</label>
+    <input type="text" id="passport" name="textbox">
+</div>
+
+
+
+<div id="nationalDiv" style="display:none;" class="mt-5">
+    <label for="textbox">NationalId</label>
+    <input type="text" id="national" name="textbox">
+</div>
+
+
+<input class="btn btn-primary mt-5" id="Egyption" type="submit" value="get Customer" />
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        $("#userType").change(function () {
+            // Check the selected value
+            var selectedValue = $(this).val();
+
+            // Show/hide the textbox container based on the selected value
+            if (selectedValue === "Egyption") { 
+                $("#nationalDiv").show();
+                $("#passportDiv").hide();
+
+            } else if (selectedValue === "Foreigner") {
+                $("#nationalDiv").hide();
+                $("#passportDiv").show();
+            }
+            else {
+
+                $("#passportDiv").hide();
+            }
+        });
+
+        $("#Egyption").on("click", function () {
+
+            var Cust_ID,Action,_Object;
+            var selectedValue = $('#userType').val();
+            if (selectedValue === "Egyption") { 
+                Cust_ID = $("#national").val();
+                Action = 'checkEgyption';
+               _Object = { "nationalId": Cust_ID }
+
+            } else if (selectedValue === "Foreigner") {
+                Cust_ID = $("#passport").val();
+                Action = 'checkForeigner';
+                _Object = { "passport": Cust_ID }
+            }
+
+            var information = document.createElement("div");
+            information.style.display = "flex";
+            information.style.alignItems = "center";
+            information.style.justifyContent = "center";
+            // Make an AJAX request to get customer information
+            $.ajax({
+                url: "/Home/" + Action,
+                type: "Get",
+                data: _Object,
+                dataType: "json",
+                success: function (customer) {
+                    if (customer.error) {
+                        // Handle the case where the customer is not found
+                        alert(customer.error);
+                    }
+                    else {
+                        $("#customerTable").remove();
+                        customerInfo = `<table class="table table-dark w-75" id="customerTable">
+
+                            <th>
+                                @Html.DisplayNameFor(model => model.Name)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.Nationality)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.occupation)
+                            </th>
+                             <th>
+                                 @Html.DisplayNameFor(model => model.CustomerType)
+                             </th>
+                             <th>
+                                @Html.DisplayNameFor(model => model.ResidentAddress)
+                            </th>
+
+
+                           <tr>
+
+                             <td>${customer.Name}</td>
+                               <td>${customer.Nationality}</td>
+                               <td>${customer.occupation}</td>
+                               <td>${customer.userType}</td>
+                               <td>${customer.ResidentAddress}</td>
+
+
+                           </tr>
+
+                     </table>`
+
+
+                        information.innerHTML = customerInfo;
+
+                    }
+                    document.body.appendChild(information);
+                },
+                error: function (error) {
+                    console.error("Error:", error);
+                }
+            });
+        });
+
+
+
+
+
+    });
+
+
+
+
+
+
+
+</script>
+
+<div class="mt-5">
+    @Html.ActionLink("Back to List", "Index")
+</div>

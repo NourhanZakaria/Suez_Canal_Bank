@@ -1,0 +1,154 @@
+﻿@model IEnumerable<suezCanalBank.Models.Customer>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "SignUp", "Home")
+</p>
+
+<label for="suspiciousCheckbox">Show Suspicious Customers:</label>
+<input type="checkbox" id="suspiciousCheckbox">
+
+
+
+@Html.ActionLink("Go to check Page", "check", "Home", new { style = "margin-left: 50px;" })
+
+@Html.ActionLink("check suspicious egyptian and foreigner ", "egyptionSuspicious", "Home", new {style = "margin-left: 50px;" })
+
+<table class="table" id="customerList">
+    <tr>
+
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Nationality)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.occupation)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ResidentAddress)
+        </th>
+
+        <th>Action</th>
+
+
+
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nationality)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.occupation)
+
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ResidentAddress)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+            </td>
+        </tr>
+    }
+
+</table>
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Variable to store the original data
+        var originalData = document.getElementById("customerList").innerHTML;
+
+        console.log(originalData);
+
+        // Function to reset the table with the original data
+        function resetTable() {
+            var content = document.getElementById("customerList");
+            content.innerHTML = originalData;
+        }
+
+        $("#suspiciousCheckbox").change(function () {
+            var isSuspicious = $(this).prop("checked");
+
+
+            // If originalData is not set, store the original table content
+            if (!isSuspicious) {
+                resetTable();
+                return false;
+            }
+
+            var dataContent = "";
+
+
+            $.ajax({
+                type: "GET",
+                url: "@Url.Action("GetSuspiciousCustomers", "Home")",
+                data: { isSuspicious: isSuspicious },
+                dataType: "json",
+                success: function (data) {
+                    // Clear the existing table body
+                    $("#customerList tbody").empty();
+
+                    var headerRow = `<tr>
+
+                                <th>
+                                    Customer Name
+                                </th>
+                                <th>
+                                    Nationality
+                                </th>
+                                <th>
+                                    occupation
+                                </th>
+                                <th>
+                                    Resident Address
+                                </th>
+
+                                <th>Action</th> </tr>`
+
+                    $("#customerList tbody").append(headerRow);
+
+                    // Iterate through the data and append to the existing table
+                    $.each(data, function (index, customer) {
+
+
+                       var   row = `
+                            <tr>
+
+                                <td>${customer.Name}</td>
+                                <td>${customer.Nationality}</td>
+                                <td>${customer.occupation}</td>
+                                <td>${customer.ResidentAddress}</td>
+                                <td>
+                                    @Html.ActionLink("Edit", "Edit", new { id = "customer.userId" }) |
+                                    @Html.ActionLink("Details", "Details", new { id = "customer.userId" }) |
+                                    @Html.ActionLink("Delete", "Delete", new { id = "customer.userId" })
+                                </td>
+                            </tr>`;
+                        $("#customerList tbody").append(row);
+                    });
+                },
+                error: function (error) {
+                    console.log("Error fetching suspicious customers: " + error);
+                }
+            });
+        });
+
+    });
+</script>
